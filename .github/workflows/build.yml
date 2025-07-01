@@ -13,55 +13,57 @@ jobs:
 
     env:
       ANDROID_HOME: /opt/android-sdk
-      PATH: /opt/android-sdk/cmdline-tools/latest/bin:/opt/android-sdk/platform-tools:/root/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      PATH: /opt/android-sdk/cmdline-tools/latest/bin:/opt/android-sdk/platform-tools:/home/builder/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
     steps:
-      - name: Install system dependencies
+      - name: Create non-root user
+        run: |
+          useradd -m builder
+          echo "builder ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+      - name: Install dependencies (as root)
         run: |
           apt-get update
           DEBIAN_FRONTEND=noninteractive apt-get install -y \
-            openjdk-11-jdk \
-            unzip \
-            wget \
-            git \
-            python3-pip \
-            python3-setuptools \
-            cython3 \
-            build-essential \
-            zip \
-            zlib1g-dev \
-            libncurses-dev \
-            libffi-dev \
-            bash \
-            curl \
-            coreutils
+            openjdk-11-jdk unzip wget git python3-pip python3-setuptools \
+            cython3 build-essential zip zlib1g-dev libncurses-dev \
+            libffi-dev bash curl coreutils sudo
 
-      - name: Checkout code
+      - name: Checkout source code
         uses: actions/checkout@v3
 
-      - name: Install Buildozer
+      - name: Setup Buildozer and Android SDK as non-root
         run: |
-          python3 -m pip install --upgrade pip setuptools wheel
+          sudo -u builder bash <<'EOF'
+          set -e
+          export ANDROID_HOME=/opt/android-sdk
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$HOME/.local/bin:$PATH
+
+          # Install Buildozer
+          python3 -m pip install --user --upgrade pip setuptools wheel
           python3 -m pip install --user buildozer
 
-      - name: Download and install Android cmdline-tools
-        run: |
+          # Download and install Android cmdline-tools
           mkdir -p $ANDROID_HOME/cmdline-tools
           cd $ANDROID_HOME/cmdline-tools
           wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
           unzip -q cmdline-tools.zip
-          rm cmdline-tools.zip
           mv cmdline-tools $ANDROID_HOME/cmdline-tools/latest
 
-      - name: Accept SDK licenses
-        run: |
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_HOME --licenses || true
+          # Accept licenses
+          yes | sdkmanager --sdk_root=$ANDROID_HOME --licenses || true
 
-      - name: Install SDK packages
-        run: |
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_HOME \
-            "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+          # Install required Android packages
+          sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
-      - name: Build APK
-        run: |
+          # Back to project directory and build
+          cd $GITHUB_WORKSPACE
           ~/.local/bin/buildozer android debug
+          EOF
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug.apk
+          path: |
+            **/bin/*.apk
