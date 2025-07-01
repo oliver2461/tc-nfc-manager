@@ -1,4 +1,4 @@
-name: Build Kivy APK with NFC Support
+name: Build APK
 
 on:
   workflow_dispatch:
@@ -8,66 +8,45 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Set up Python 3.11
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: 3.11
 
-      - name: Install system dependencies
+      - name: Install dependencies
         run: |
-          sudo apt update
-          sudo apt install -y python3-pip zip unzip openjdk-17-jdk git build-essential curl
-
-      - name: Install Python packages
-        run: |
+          sudo apt-get update
+          sudo apt-get install -y zip unzip openjdk-17-jdk
           pip install --upgrade pip
           pip install buildozer cython
 
-      - name: Install Android SDK Build Tools & Accept Licenses
+      - name: Install Android SDK + Accept Licenses
         run: |
           export ANDROID_SDK_ROOT=$HOME/.buildozer/android/platform/android-sdk
-          export CMDLINE_TOOLS_DIR=$ANDROID_SDK_ROOT/cmdline-tools/latest
+          export CMDLINE_TOOLS=$ANDROID_SDK_ROOT/cmdline-tools/latest
 
-          mkdir -p $CMDLINE_TOOLS_DIR
+          mkdir -p $CMDLINE_TOOLS
           cd $ANDROID_SDK_ROOT/cmdline-tools
-
-          curl -o commandlinetools.zip https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
-          unzip -q commandlinetools.zip -d tmp
+          curl -o sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
+          unzip -q sdk.zip -d tmp
           mv tmp/cmdline-tools/* latest/
-          rm -rf tmp commandlinetools.zip
+          rm -rf tmp sdk.zip
 
-          export PATH=$CMDLINE_TOOLS_DIR/bin:$PATH
+          export PATH=$CMDLINE_TOOLS/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH
 
-          yes | sdkmanager --sdk_root=${ANDROID_SDK_ROOT} --licenses
-          yes | sdkmanager --sdk_root=${ANDROID_SDK_ROOT} \
-            "build-tools;36.0.0" \
-            "platforms;android-36" \
-            "platform-tools"
-
-      - name: Setup Android SDK, Build Tools and accept licenses
-        run: |
-          export ANDROID_SDK_ROOT=$HOME/.buildozer/android/platform/android-sdk
-          mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
-          if [ ! -d "$ANDROID_SDK_ROOT/cmdline-tools/latest" ]; then
-            cd $ANDROID_SDK_ROOT/cmdline-tools
-            curl -o commandlinetools.zip https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
-            unzip commandlinetools.zip
-            mkdir latest
-            mv cmdline-tools latest/
-            rm commandlinetools.zip
-          fi
-          export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
-          yes | sdkmanager --install "platform-tools" "build-tools;36.0.0" "platforms;android-36"
-          yes | sdkmanager --licenses
+          yes | $CMDLINE_TOOLS/bin/sdkmanager --sdk_root=${ANDROID_SDK_ROOT} --licenses
+          yes | $CMDLINE_TOOLS/bin/sdkmanager --sdk_root=${ANDROID_SDK_ROOT} \
+            "platform-tools" "build-tools;36.0.0" "platforms;android-36"
 
       - name: Build APK
         run: |
+          export PATH=$HOME/.buildozer/android/platform/android-sdk/platform-tools:$PATH
           buildozer android debug
 
-      - name: Upload APK artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: tc-nfc-manager-apk
