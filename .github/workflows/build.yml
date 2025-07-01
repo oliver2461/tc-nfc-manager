@@ -58,7 +58,7 @@ jobs:
       - name: Install SDK packages
         shell: bash
         env:
-          PATH: ${{ env.ANDROID_HOME }}/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
+          PATH: ${{ env.ANDROID_HOME }}/cmdline-tools/latest/bin:${{ env.ANDROID_HOME }}/platform-tools:$PATH
           ANDROID_HOME: ${{ env.ANDROID_HOME }}
         run: |
           sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-33" "build-tools;33.0.2"
@@ -77,4 +77,4 @@ jobs:
           PATH: /home/runner/.local/bin:$PATH
           ANDROID_HOME: ${{ env.ANDROID_HOME }}
         run: |
-          buildozer android debug
+          ~/.local/bin/buildozer android debug
