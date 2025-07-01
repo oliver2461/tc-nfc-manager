@@ -48,6 +48,9 @@ jobs:
       env:
         PATH: ${{ env.ANDROID_HOME }}/cmdline-tools/latest/cmdline-tools/bin:$ANDROID_HOME/platform-tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
+    - name: Install git
+      run: sudo apt-get update && sudo apt-get install -y git
+
     - name: Install Buildozer
       run: |
         python3 -m pip install --user --upgrade buildozer
