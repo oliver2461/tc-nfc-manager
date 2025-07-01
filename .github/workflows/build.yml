@@ -35,12 +35,10 @@ jobs:
           mv cmdline-tools $ANDROID_HOME/cmdline-tools/latest
         shell: bash
 
-      - name: Accept Android SDK licenses and update SDK
+      - name: Accept Android SDK licenses
         env:
           PATH: ${{ env.ANDROID_HOME }}/cmdline-tools/latest/bin:${{ env.ANDROID_HOME }}/platform-tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:~/.local/bin
-        run: |
-          yes | sdkmanager --sdk_root=$ANDROID_HOME --licenses
-          sdkmanager --sdk_root=$ANDROID_HOME --update
+        run: yes | sdkmanager --sdk_root=$ANDROID_HOME --licenses
 
       - name: Install SDK packages needed for build
         env:
