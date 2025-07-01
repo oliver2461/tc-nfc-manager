@@ -11,13 +11,13 @@ jobs:
 
     env:
       ANDROID_HOME: /tmp/android-sdk
-      PATH: /tmp/android-sdk/cmdline-tools/latest/bin:/tmp/android-sdk/platform-tools:~/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      PATH: /tmp/android-sdk/cmdline-tools/latest/bin:/tmp/android-sdk/platform-tools:/home/runner/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install system dependencies (including coreutils and dash)
+      - name: Install system dependencies including coreutils and dash
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -55,6 +55,7 @@ jobs:
           rm cmdline-tools.zip
           rm -rf $ANDROID_HOME/cmdline-tools/latest
           mv cmdline-tools $ANDROID_HOME/cmdline-tools/latest
+        shell: bash
 
       - name: Accept Android SDK licenses
         env:
@@ -79,7 +80,8 @@ jobs:
 
       - name: Build APK (debug)
         env:
-          PATH: ~/.local/bin:$PATH
+          PATH: /home/runner/.local/bin:$PATH
           ANDROID_HOME: ${{ env.ANDROID_HOME }}
+        shell: bash
         run: |
           ~/.local/bin/buildozer android debug
