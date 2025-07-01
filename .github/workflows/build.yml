@@ -21,7 +21,22 @@ jobs:
         shell: bash
         run: |
           sudo apt-get update
-          sudo apt-get install -y openjdk-11-jdk unzip wget python3-pip python3-setuptools git cython3 build-essential zip zlib1g-dev libncurses-dev libffi-dev coreutils bash
+          sudo apt-get install -y \
+            openjdk-11-jdk \
+            unzip \
+            wget \
+            python3-pip \
+            python3-setuptools \
+            python3-dev \
+            git \
+            cython3 \
+            build-essential \
+            zip \
+            zlib1g-dev \
+            libncurses-dev \
+            libffi-dev \
+            coreutils \
+            bash
 
       - name: Fix /bin/sh symlink to bash
         shell: bash
@@ -45,16 +60,16 @@ jobs:
           rm -rf $ANDROID_HOME/cmdline-tools/latest
           mv cmdline-tools $ANDROID_HOME/cmdline-tools/latest
 
-      - name: Accept Android SDK licenses (no yes command)
+      - name: Accept Android SDK licenses
         shell: bash
         env:
           PATH: ${{ env.ANDROID_HOME }}/cmdline-tools/latest/bin:$PATH
           ANDROID_HOME: ${{ env.ANDROID_HOME }}
         run: |
-          # Accept licenses by looping through sdkmanager licenses
-          while true; do
-            echo y | sdkmanager --sdk_root=$ANDROID_HOME --licenses || break
-          done
+          # Accept licenses manually by echoing "y" multiple times
+          for i in {1..20}; do
+            echo "y"
+          done | sdkmanager --sdk_root=$ANDROID_HOME --licenses || true
 
       - name: Install SDK packages
         shell: bash
