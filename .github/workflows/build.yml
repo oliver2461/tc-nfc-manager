@@ -11,18 +11,40 @@ jobs:
 
     env:
       ANDROID_HOME: /tmp/android-sdk
+      PATH: /tmp/android-sdk/cmdline-tools/latest/bin:/tmp/android-sdk/platform-tools:~/.local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install system dependencies including cython3
+      - name: Clean previous build caches and SDK folders
+        run: |
+          echo "Cleaning old caches..."
+          rm -rf ~/.buildozer
+          rm -rf /tmp/android-sdk
+
+      - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y openjdk-11-jdk unzip wget python3-pip python3-setuptools git cython3
+          sudo apt-get install -y \
+            openjdk-11-jdk \
+            unzip \
+            wget \
+            python3-pip \
+            python3-setuptools \
+            git \
+            cython3 \
+            build-essential \
+            zip \
+            zlib1g-dev \
+            libncurses5 \
+            libstdc++6 \
+            libffi-dev
 
-      - name: Install Buildozer
-        run: python3 -m pip install --user --upgrade buildozer
+      - name: Upgrade pip and install Buildozer
+        run: |
+          python3 -m pip install --upgrade pip setuptools wheel
+          python3 -m pip install --user --upgrade buildozer
 
       - name: Download and install Android cmdline-tools
         run: |
@@ -33,27 +55,38 @@ jobs:
           rm cmdline-tools.zip
           rm -rf $ANDROID_HOME/cmdline-tools/latest
           mv cmdline-tools $ANDROID_HOME/cmdline-tools/latest
-        shell: bash
 
       - name: Accept Android SDK licenses
         env:
-          PATH: ${{ env.ANDROID_HOME }}/cmdline-tools/latest/bin:${{ env.ANDROID_HOME }}/platform-tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:~/.local/bin
-        run: yes | sdkmanager --sdk_root=$ANDROID_HOME --licenses
+          PATH: ${{ env.ANDROID_HOME }}/cmdline-tools/latest/bin:$PATH
+        run: |
+          yes | sdkmanager --sdk_root=$ANDROID_HOME --licenses
 
-      - name: Install SDK packages needed for build
+      - name: Install required Android SDK packages
         env:
-          PATH: ${{ env.ANDROID_HOME }}/cmdline-tools/latest/bin:${{ env.ANDROID_HOME }}/platform-tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:~/.local/bin
+          PATH: ${{ env.ANDROID_HOME }}/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
         run: |
-          sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+          sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-33" "build-tools;33.0.2" "ndk;25.2.9519653"
 
-      - name: Verify git and cython availability
+      - name: Verify essential tools installation
         run: |
-          which git
+          echo "Git version:"
           git --version
-          which cython3
+          echo "Cython version:"
           cython3 --version
+          echo "Java version:"
+          java -version
+          echo "SDK Manager version:"
+          sdkmanager --version
 
-      - name: Run Buildozer to build APK
+      - name: Show Buildozer version and config
+        run: |
+          ~/.local/bin/buildozer --version
+          cat buildozer.spec
+
+      - name: Build APK (debug)
         env:
-          PATH: /usr/bin:~/.local/bin:$PATH
-        run: ~/.local/bin/buildozer android debug
+          PATH: ~/.local/bin:$PATH
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+        run: |
+          ~/.local/bin/buildozer android debug
