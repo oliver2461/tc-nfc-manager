@@ -11,7 +11,7 @@ jobs:
 
     env:
       ANDROID_HOME: /tmp/android-sdk
-      PATH: /tmp/android-sdk/cmdline-tools/latest/bin:/tmp/android-sdk/platform-tools:~/.local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin
+      PATH: /tmp/android-sdk/cmdline-tools/latest/bin:/tmp/android-sdk/platform-tools:~/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
     steps:
       - name: Checkout repository
@@ -37,7 +37,7 @@ jobs:
             coreutils \
             dash
 
-      - name: Ensure /bin/sh points to dash (fix env ‘sh’ error)
+      - name: Fix /bin/sh symlink to dash
         run: |
           sudo ln -sf /bin/dash /bin/sh
 
@@ -68,7 +68,7 @@ jobs:
           PATH: ${{ env.ANDROID_HOME }}/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
         shell: bash
         run: |
-          sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-33" "build-tools;33.0.2" "ndk;25.2.9519653"
+          sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
       - name: Verify essential tools installation
         run: |
@@ -76,11 +76,6 @@ jobs:
           cython3 --version
           java -version
           sdkmanager --version
-
-      - name: Show Buildozer version and config
-        run: |
-          ~/.local/bin/buildozer --version
-          cat buildozer.spec
 
       - name: Build APK (debug)
         env:
