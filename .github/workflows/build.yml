@@ -48,8 +48,13 @@ jobs:
         run: |
           sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
+      - name: Check git availability
+        run: |
+          which git
+          git --version
+
       - name: Run Buildozer to build APK
         env:
-          PATH: ~/.local/bin:$PATH
+          PATH: /usr/bin:~/.local/bin:$PATH
         run: |
           ~/.local/bin/buildozer android debug
