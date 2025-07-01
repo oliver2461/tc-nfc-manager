@@ -21,7 +21,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y openjdk-11-jdk unzip wget python3-pip python3-setuptools git cython3
 
-      - name: Install Buildozer only (no cython here)
+      - name: Install Buildozer only
         run: python3 -m pip install --user --upgrade buildozer
 
       - name: Download and install Android cmdline-tools
@@ -48,7 +48,7 @@ jobs:
         run: |
           sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
-      - name: Check git and cython availability
+      - name: Verify git and cython availability
         run: |
           which git
           git --version
