@@ -48,8 +48,13 @@ jobs:
       env:
         PATH: ${{ env.ANDROID_HOME }}/cmdline-tools/latest/cmdline-tools/bin:$ANDROID_HOME/platform-tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
+    - name: Install Buildozer
+      run: |
+        python3 -m pip install --user --upgrade buildozer
+       # No env needed here
+
     - name: Run Buildozer to build APK
       run: |
-        buildozer android debug
+        ~/.local/bin/buildozer android debug
       env:
-        PATH: /usr/local/bin:$PATH
+        PATH: ~/.local/bin:${{ env.PATH }}
