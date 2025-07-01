@@ -17,13 +17,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Clean previous build caches and SDK folders
-        run: |
-          echo "Cleaning old caches..."
-          rm -rf ~/.buildozer
-          rm -rf /tmp/android-sdk
-
-      - name: Install system dependencies
+      - name: Install system dependencies (including coreutils and dash)
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -39,7 +33,13 @@ jobs:
             zlib1g-dev \
             libncurses-dev \
             libstdc++6 \
-            libffi-dev
+            libffi-dev \
+            coreutils \
+            dash
+
+      - name: Ensure /bin/sh points to dash (fix env ‘sh’ error)
+        run: |
+          sudo ln -sf /bin/dash /bin/sh
 
       - name: Upgrade pip and install Buildozer
         run: |
@@ -59,24 +59,22 @@ jobs:
       - name: Accept Android SDK licenses
         env:
           PATH: ${{ env.ANDROID_HOME }}/cmdline-tools/latest/bin:$PATH
+        shell: bash
         run: |
           yes | sdkmanager --sdk_root=$ANDROID_HOME --licenses
 
       - name: Install required Android SDK packages
         env:
           PATH: ${{ env.ANDROID_HOME }}/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
+        shell: bash
         run: |
           sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-33" "build-tools;33.0.2" "ndk;25.2.9519653"
 
       - name: Verify essential tools installation
         run: |
-          echo "Git version:"
           git --version
-          echo "Cython version:"
           cython3 --version
-          echo "Java version:"
           java -version
-          echo "SDK Manager version:"
           sdkmanager --version
 
       - name: Show Buildozer version and config
