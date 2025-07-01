@@ -14,25 +14,28 @@ jobs:
       PATH: /tmp/android-sdk/cmdline-tools/latest/bin:/tmp/android-sdk/platform-tools:/home/runner/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Install system dependencies
+        shell: bash
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
-            openjdk-11-jdk unzip wget python3-pip python3-setuptools git cython3 build-essential zip zlib1g-dev libncurses-dev libffi-dev coreutils dash
-          
-      - name: Fix /bin/sh symlink to dash shell
+          sudo apt-get install -y openjdk-11-jdk unzip wget python3-pip python3-setuptools git cython3 build-essential zip zlib1g-dev libncurses-dev libffi-dev coreutils bash
+
+      - name: Fix /bin/sh symlink to bash
+        shell: bash
         run: |
-          sudo ln -sf /bin/dash /bin/sh
+          sudo ln -sf /bin/bash /bin/sh
 
       - name: Upgrade pip and install Buildozer
+        shell: bash
         run: |
           python3 -m pip install --upgrade pip setuptools wheel
           python3 -m pip install --user --upgrade buildozer
 
       - name: Download and install Android cmdline-tools
+        shell: bash
         run: |
           mkdir -p $ANDROID_HOME/cmdline-tools
           cd $ANDROID_HOME/cmdline-tools
@@ -41,23 +44,28 @@ jobs:
           rm cmdline-tools.zip
           rm -rf $ANDROID_HOME/cmdline-tools/latest
           mv cmdline-tools $ANDROID_HOME/cmdline-tools/latest
-        shell: bash
 
-      - name: Accept Android SDK licenses
+      - name: Accept Android SDK licenses (no yes command)
         shell: bash
         env:
           PATH: ${{ env.ANDROID_HOME }}/cmdline-tools/latest/bin:$PATH
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
         run: |
-          yes | sdkmanager --sdk_root=$ANDROID_HOME --licenses
+          # Accept licenses by looping through sdkmanager licenses
+          while true; do
+            echo y | sdkmanager --sdk_root=$ANDROID_HOME --licenses || break
+          done
 
       - name: Install SDK packages
         shell: bash
         env:
           PATH: ${{ env.ANDROID_HOME }}/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
         run: |
           sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
       - name: Verify tools installed
+        shell: bash
         run: |
           git --version
           cython3 --version
