@@ -41,6 +41,12 @@ jobs:
           yes | $CMDLINE_TOOLS/bin/sdkmanager --sdk_root=${ANDROID_SDK_ROOT} \
             "platform-tools" "build-tools;36.0.0" "platforms;android-36"
 
+      - name: Fix Buildozer SDK path expectations
+        run: |
+          export ANDROID_SDK_ROOT=$HOME/.buildozer/android/platform/android-sdk
+          mkdir -p $ANDROID_SDK_ROOT/tools/bin
+          ln -sf $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager $ANDROID_SDK_ROOT/tools/bin/sdkmanager
+
       - name: Build APK
         run: |
           export PATH=$HOME/.buildozer/android/platform/android-sdk/platform-tools:$PATH
