@@ -11,56 +11,42 @@ jobs:
 
     env:
       ANDROID_HOME: /tmp/android-sdk
+      PATH: /tmp/android-sdk/cmdline-tools/latest/bin:/tmp/android-sdk/platform-tools:~/.local/bin:${{ env.PATH }}
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y openjdk-11-jdk unzip wget python3-pip python3-setuptools
-        pip3 install --upgrade buildozer
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openjdk-11-jdk unzip wget python3-pip python3-setuptools git
 
-    - name: Download and install Android cmdline-tools
-      run: |
-        mkdir -p $ANDROID_HOME/cmdline-tools
-        cd $ANDROID_HOME/cmdline-tools
-        wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
-        unzip -q cmdline-tools.zip
-        rm cmdline-tools.zip
-        # Move and fix directory structure
-        rm -rf $ANDROID_HOME/cmdline-tools/latest
-        mkdir -p $ANDROID_HOME/cmdline-tools/latest
-        mv $ANDROID_HOME/cmdline-tools/cmdline-tools $ANDROID_HOME/cmdline-tools/latest/cmdline-tools
-      shell: bash
+      - name: Install Buildozer
+        run: |
+          python3 -m pip install --user --upgrade buildozer
 
-    - name: Accept Android SDK licenses and update SDK
-      run: |
-        yes | $ANDROID_HOME/cmdline-tools/latest/cmdline-tools/bin/sdkmanager --sdk_root=$ANDROID_HOME --licenses
-        $ANDROID_HOME/cmdline-tools/latest/cmdline-tools/bin/sdkmanager --sdk_root=$ANDROID_HOME --update
-      env:
-        PATH: ${{ env.ANDROID_HOME }}/cmdline-tools/latest/cmdline-tools/bin:$ANDROID_HOME/platform-tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      - name: Download and install Android cmdline-tools
+        run: |
+          mkdir -p $ANDROID_HOME/cmdline-tools
+          cd $ANDROID_HOME/cmdline-tools
+          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
+          unzip -q cmdline-tools.zip
+          rm cmdline-tools.zip
+          # The zip creates a cmdline-tools folder, move it to latest/
+          rm -rf $ANDROID_HOME/cmdline-tools/latest
+          mv cmdline-tools $ANDROID_HOME/cmdline-tools/latest
+        shell: bash
 
-    - name: Install SDK packages needed for build
-      run: |
-        $ANDROID_HOME/cmdline-tools/latest/cmdline-tools/bin/sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-33" "build-tools;33.0.2"
-      env:
-        PATH: ${{ env.ANDROID_HOME }}/cmdline-tools/latest/cmdline-tools/bin:$ANDROID_HOME/platform-tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      - name: Accept Android SDK licenses and update SDK
+        run: |
+          yes | sdkmanager --sdk_root=$ANDROID_HOME --licenses
+          sdkmanager --sdk_root=$ANDROID_HOME --update
 
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y git python3-pip openjdk-11-jdk unzip
-          
+      - name: Install SDK packages needed for build
+        run: |
+          sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
-    - name: Install Buildozer
-      run: |
-        python3 -m pip install --user --upgrade buildozer
-       # No env needed here
-
-    - name: Run Buildozer to build APK
-      run: |
-        ~/.local/bin/buildozer android debug
-      env:
-        PATH: ~/.local/bin:${{ env.PATH }}
+      - name: Run Buildozer to build APK
+        run: |
+          ~/.local/bin/buildozer android debug
