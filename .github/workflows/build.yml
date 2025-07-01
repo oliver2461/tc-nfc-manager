@@ -14,30 +14,16 @@ jobs:
       PATH: /tmp/android-sdk/cmdline-tools/latest/bin:/tmp/android-sdk/platform-tools:/home/runner/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Install system dependencies including coreutils and dash
+      - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            openjdk-11-jdk \
-            unzip \
-            wget \
-            python3-pip \
-            python3-setuptools \
-            git \
-            cython3 \
-            build-essential \
-            zip \
-            zlib1g-dev \
-            libncurses-dev \
-            libstdc++6 \
-            libffi-dev \
-            coreutils \
-            dash
-
-      - name: Fix /bin/sh symlink to dash
+            openjdk-11-jdk unzip wget python3-pip python3-setuptools git cython3 build-essential zip zlib1g-dev libncurses-dev libffi-dev coreutils dash
+          
+      - name: Fix /bin/sh symlink to dash shell
         run: |
           sudo ln -sf /bin/dash /bin/sh
 
@@ -58,30 +44,30 @@ jobs:
         shell: bash
 
       - name: Accept Android SDK licenses
+        shell: bash
         env:
           PATH: ${{ env.ANDROID_HOME }}/cmdline-tools/latest/bin:$PATH
-        shell: bash
         run: |
           yes | sdkmanager --sdk_root=$ANDROID_HOME --licenses
 
-      - name: Install required Android SDK packages
+      - name: Install SDK packages
+        shell: bash
         env:
           PATH: ${{ env.ANDROID_HOME }}/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
-        shell: bash
         run: |
           sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
-      - name: Verify essential tools installation
+      - name: Verify tools installed
         run: |
           git --version
           cython3 --version
           java -version
           sdkmanager --version
 
-      - name: Build APK (debug)
+      - name: Build APK with Buildozer
+        shell: bash
         env:
           PATH: /home/runner/.local/bin:$PATH
           ANDROID_HOME: ${{ env.ANDROID_HOME }}
-        shell: bash
         run: |
           ~/.local/bin/buildozer android debug
