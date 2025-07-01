@@ -19,7 +19,13 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y python3-pip zip unzip openjdk-17-jdk git build-essential curl
+          pip install --upgrade pip
           pip install buildozer cython
+
+      - name: Accept SDK Licenses
+        run: |
+            yes | $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
 
       - name: Build APK
         run: |
