@@ -37,7 +37,7 @@ jobs:
             build-essential \
             zip \
             zlib1g-dev \
-            libncurses5 \
+            libncurses-dev \
             libstdc++6 \
             libffi-dev
 
