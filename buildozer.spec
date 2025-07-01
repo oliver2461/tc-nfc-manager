@@ -40,13 +40,13 @@ icon.filename = %(source.dir)s/icon.png
 android.archs = arm64-v8a, armeabi-v7a
 
 # (str) Android API to use
-android.api = 31
+android.api = 33
 
 # (str) Android NDK API minimum version
 android.minapi = 21
 
 # (str) Android SDK Build Tools version
-android.build_tools_version = 34.0.0
+android.build_tools_version = 33.0.2
 
 # (bool) Copy library instead of using linker
 android.copy_libs = 1
@@ -55,10 +55,10 @@ android.copy_libs = 1
 bootstrap = sdl2
 
 # (bool) Indicate if you want to use a custom Java class
-#android.add_src = 
+android.ndk = 23b
 
 # (list) Additional Java .jar files to add (optional)
-#android.add_jars = 
+android.sdk = 33
 
 # (list) .so files to include (optional)
 #android.add_libs = 
