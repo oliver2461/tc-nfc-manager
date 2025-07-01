@@ -26,7 +26,8 @@ jobs:
       - name: Fix /bin/sh symlink to bash
         shell: bash
         run: |
-          sudo ln -sf /bin/bash /bin/sh
+          if [ -f /bin/sh ]; then sudo rm /bin/sh; fi
+          sudo ln -s /bin/bash /bin/sh
 
       - name: Upgrade pip and install Buildozer
         shell: bash
@@ -51,7 +52,8 @@ jobs:
           PATH: ${{ env.ANDROID_HOME }}/cmdline-tools/latest/bin:$PATH
           ANDROID_HOME: ${{ env.ANDROID_HOME }}
         run: |
-          for i in {1..20}; do echo "y"; done | sdkmanager --sdk_root=$ANDROID_HOME --licenses || true
+          yes_cmd() { for i in {1..25}; do echo y; done; }
+          yes_cmd | sdkmanager --sdk_root=$ANDROID_HOME --licenses || true
 
       - name: Install SDK packages
         shell: bash
@@ -75,4 +77,4 @@ jobs:
           PATH: /home/runner/.local/bin:$PATH
           ANDROID_HOME: ${{ env.ANDROID_HOME }}
         run: |
-          ~/.local/bin/buildozer android debug
+          buildozer android debug
