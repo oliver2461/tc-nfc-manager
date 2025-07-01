@@ -21,8 +21,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y openjdk-11-jdk unzip wget python3-pip python3-setuptools git
 
-      - name: Install Buildozer
-        run: python3 -m pip install --user --upgrade buildozer
+      - name: Install Buildozer and dependencies
+        run: |
+          python3 -m pip install --user --upgrade buildozer cython
 
       - name: Download and install Android cmdline-tools
         run: |
