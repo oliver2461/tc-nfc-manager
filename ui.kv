@@ -1,0 +1,49 @@
+# ui.kv
+BoxLayout:
+    orientation: 'vertical'
+    padding: 20
+    spacing: 10
+
+    TextInput:
+        id: tag_input
+        hint_text: "Enter tag ID (e.g., DIO123)"
+        multiline: False
+        size_hint_y: None
+        height: "40dp"
+
+    TextInput:
+        id: desc_input
+        hint_text: "Enter description"
+        multiline: True
+        size_hint_y: None
+        height: "100dp"
+
+    BoxLayout:
+        size_hint_y: None
+        height: "40dp"
+        spacing: 10
+
+        Button:
+            text: "Read"
+            on_press: app.read_tag()
+
+        Button:
+            text: "Add"
+            on_press: app.add_tag()
+
+        Button:
+            text: "Remove"
+            on_press: app.remove_tag()
+
+    ScrollView:
+        size_hint_y: 1
+
+        Label:
+            id: output_label
+            text: "Output will appear here."
+            font_size: "18sp"
+            size_hint_y: None
+            height: self.texture_size[1] + 20
+            text_size: self.width, None
+            halign: 'left'
+            valign: 'top'
