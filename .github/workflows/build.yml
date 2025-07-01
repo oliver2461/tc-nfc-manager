@@ -16,14 +16,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install system dependencies
+      - name: Install system dependencies including cython3
         run: |
           sudo apt-get update
-          sudo apt-get install -y openjdk-11-jdk unzip wget python3-pip python3-setuptools git
+          sudo apt-get install -y openjdk-11-jdk unzip wget python3-pip python3-setuptools git cython3
 
-      - name: Install Buildozer and dependencies
-        run: |
-          python3 -m pip install --user --upgrade buildozer cython
+      - name: Install Buildozer only (no cython here)
+        run: python3 -m pip install --user --upgrade buildozer
 
       - name: Download and install Android cmdline-tools
         run: |
@@ -49,13 +48,14 @@ jobs:
         run: |
           sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
-      - name: Check git availability
+      - name: Check git and cython availability
         run: |
           which git
           git --version
+          which cython3
+          cython3 --version
 
       - name: Run Buildozer to build APK
         env:
           PATH: /usr/bin:~/.local/bin:$PATH
-        run: |
-          ~/.local/bin/buildozer android debug
+        run: ~/.local/bin/buildozer android debug
