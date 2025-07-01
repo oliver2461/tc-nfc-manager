@@ -32,6 +32,7 @@ jobs:
           set -e
           export ANDROID_HOME=/opt/android-sdk
           export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$HOME/.local/bin:$PATH
+          export BUILD_DEBUG_ROOT_IGNORE=1
 
           # Install Buildozer
           python3 -m pip install --upgrade pip setuptools wheel
